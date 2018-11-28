@@ -188,7 +188,6 @@ GameObject:
   m_Component:
   - component: {fileID: 550904573}
   - component: {fileID: 550904571}
-  - component: {fileID: 550904572}
   m_Layer: 0
   m_Name: Generator
   m_TagString: Untagged
@@ -207,28 +206,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40e8428a19918f94886faa5ffd347450, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomPrefab: {fileID: 1473793857022332, guid: 7aaf7fe70d84c244eb3ab387b5208ad1, type: 2}
+  roomPrefab: {fileID: 1807525739632344, guid: d73baa8a92ce3844fb762528e2e678c2, type: 2}
   roomCount: 0
-  levelWidth: 2
-  levelHeight: 2
-  levelTransform: {x: 0, y: 0, z: 0}
-  levelRotation: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &550904572
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 550904570}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b837e41cd6403ef4f9a1522dccb6ddb8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
   levelWidth: 5
   levelHeight: 5
-  numRooms: 8
-  count: 0
-  roomPrefab: {fileID: 1473793857022332, guid: 7aaf7fe70d84c244eb3ab387b5208ad1, type: 2}
+  levelTransform: {x: 0, y: 0, z: 0}
+  levelRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!4 &550904573
 Transform:
   m_ObjectHideFlags: 0
