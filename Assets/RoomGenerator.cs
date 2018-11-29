@@ -1,30 +1,68 @@
-﻿using System.Collections;
+﻿//using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
+
 
 public class RoomGenerator : MonoBehaviour
 {
+    #region variables and such
     public GameObject roomPrefab;
+    public GameObject pickupPrefab;
 
     public int roomCount = 0;
-    public int MAXROOMS = 15;
-    //public int levelWidth = 5;
-    //public int levelHeight = 5;
+    public int MAXROOMS = 40;
 
     public Vector3 levelTransform;
     public Quaternion levelRotation;
 
     public List<Room> rooms = new List<Room>();
     public List<Room> branchRooms = new List<Room>();
+    public List<GameObject> pickups = new List<GameObject>();
+
+    private StringBuilder sb = new StringBuilder();
+
+    private int totalReplacementPasses = 0;
+    #endregion
 
     // Use this for initialization
     void Start()
     {
+        GenerateRooms(0, 0);
+        CreatePickups();
+        //print("Total replacement passes: " + totalReplacementPasses);
+        //System.IO.File.WriteAllText("generation.log", sb.ToString());
+    }//end start
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+    }//end update
+
+    private void CreatePickups()
+    {
+        foreach (Room room in rooms)
+        {
+            int randInt = UnityEngine.Random.Range(0, 10);
+            if ( randInt >= 9)
+            {
+                GameObject pickupObj = Instantiate(pickupPrefab, room.roomGameObj.transform.position, Quaternion.identity);
+            }
+        }
+    }//end create pickups
+
+    private void GenerateRooms(int xPos, int yPos)
+    {
         if (roomCount == 0)
         {
-            Room roomStart = CreateRoom(0, 0);
+            Room roomStart = CreateRoom(xPos, yPos);
             rooms.Add(roomStart);
-            //roomCount++;
 
             roomStart.isOpenUp = true;
             roomStart.isOpenDown = true;
@@ -39,19 +77,15 @@ public class RoomGenerator : MonoBehaviour
                 MakeWalls(room);
             }
         }
-    }//end start
-
-    // Update is called once per frame
-    void Update()
-    {
-    }//end update
-
+    }//end gen room
+    
     public void CreateRooms(Room roomStart)
     {
+        sb.AppendLine("Going to create another round of rooms based off of: " + roomStart.roomPos.ToString());
         if (roomCount <= MAXROOMS)
         {
             //check for up, down, left, and right
-            if (roomStart.isOpenRight)
+            if (roomStart.isOpenRight && !IsRoomAlreadyThere(roomStart.roomPos + Vector2Int.right))
             {
                 Room createdRoom = CreateRoom(roomStart.roomPos.x + 1, roomStart.roomPos.y);
 
@@ -61,7 +95,6 @@ public class RoomGenerator : MonoBehaviour
                 createdRoom.roomPos.x = roomStart.roomPos.x + 1;
                 createdRoom.roomPos.y = roomStart.roomPos.y;
                 createdRoom.PrintRoomInfo();
-                //Debug.Log("room at: " + createdRoom.roomPos.ToString());
 
                 // Create a connection from the roomStart parameter to the newly created room
                 Connection connectionFromRoom = new Connection(Vector2Int.right, createdRoom);
@@ -77,7 +110,7 @@ public class RoomGenerator : MonoBehaviour
                 connectionFromRoom.PrintConnectionInfo();
                 connectionToRoom.PrintConnectionInfo();
             }
-            if (roomStart.isOpenLeft)
+            if (roomStart.isOpenLeft && !IsRoomAlreadyThere(roomStart.roomPos + Vector2Int.left))
             {
                 Room createdRoom = CreateRoom(roomStart.roomPos.x - 1, roomStart.roomPos.y);
 
@@ -87,7 +120,6 @@ public class RoomGenerator : MonoBehaviour
                 createdRoom.roomPos.x = roomStart.roomPos.x - 1;
                 createdRoom.roomPos.y = roomStart.roomPos.y;
                 createdRoom.PrintRoomInfo();
-                //Debug.Log("room at: " + createdRoom.roomPos.ToString());
 
                 //make connection
                 Connection connectionFromRoom = new Connection(Vector2Int.left, createdRoom);
@@ -103,7 +135,7 @@ public class RoomGenerator : MonoBehaviour
                 connectionFromRoom.PrintConnectionInfo();
                 connectionToRoom.PrintConnectionInfo();
             }
-            if (roomStart.isOpenUp)
+            if (roomStart.isOpenUp && !IsRoomAlreadyThere(roomStart.roomPos + Vector2Int.up))
             {
                 Room createdRoom = CreateRoom(roomStart.roomPos.x, roomStart.roomPos.y + 1);
 
@@ -113,7 +145,6 @@ public class RoomGenerator : MonoBehaviour
                 createdRoom.roomPos.x = roomStart.roomPos.x;
                 createdRoom.roomPos.y = roomStart.roomPos.y + 1;
                 createdRoom.PrintRoomInfo();
-                //Debug.Log("room at: " + createdRoom.roomPos.ToString());
 
                 //make connection
                 Connection connectionFromRoom = new Connection(Vector2Int.up, createdRoom);
@@ -129,7 +160,7 @@ public class RoomGenerator : MonoBehaviour
                 connectionFromRoom.PrintConnectionInfo();
                 connectionToRoom.PrintConnectionInfo();
             }
-            if (roomStart.isOpenDown)
+            if (roomStart.isOpenDown && !IsRoomAlreadyThere(roomStart.roomPos + Vector2Int.down))
             {
                 Room createdRoom = CreateRoom(roomStart.roomPos.x, roomStart.roomPos.y - 1);
 
@@ -139,7 +170,6 @@ public class RoomGenerator : MonoBehaviour
                 createdRoom.roomPos.x = roomStart.roomPos.x;
                 createdRoom.roomPos.y = roomStart.roomPos.y - 1;
                 createdRoom.PrintRoomInfo();
-                //Debug.Log("room at: " + createdRoom.roomPos.ToString());
 
                 //make connection
                 Connection connectionFromRoom = new Connection(Vector2Int.down, createdRoom);
@@ -161,12 +191,7 @@ public class RoomGenerator : MonoBehaviour
         //but use a different room as the starting point
         if (roomCount <= MAXROOMS)
         {
-            Room nextRoomStart = rooms[Random.Range(0, rooms.Count-1)];
-            //Room nextRoomStart = rooms[0];
-
-            //get a random closed direction and open it up
-            //some of them will already be open, so dont use that one
-            //get a room with a closed wall 
+            Room nextRoomStart = rooms[UnityEngine.Random.Range(0, rooms.Count)];
 
             //while loop way:
             //while room that is selcted is open on 4 sides, choose a new room
@@ -174,37 +199,48 @@ public class RoomGenerator : MonoBehaviour
             //then: you have to avoid stacking rooms on top of each other
             //make a list of rooms already created, so you dont make them twice
             //then check if the new room already exists, then get rid of it if it does
+
+            int replacementPasses = 0;
+
             while (nextRoomStart.isOpenUp && nextRoomStart.isOpenDown &&
                 nextRoomStart.isOpenRight && nextRoomStart.isOpenLeft)
             {
                 //pick a random room to be the start point
                 //nextRoomStart = branchRooms[1];
-                nextRoomStart = branchRooms[Random.Range(0, branchRooms.Count-1)];
-
-                //pick a random side to open
-                ChooseRandomSideToOpen(nextRoomStart);
-
-                //if the room already exists, don't put anything else in this spot
-                CreateRooms(nextRoomStart);
-                
-
-                //if (branchRooms.Contains(nextRoomStart))
-                //{
-                //    rooms.Remove(nextRoomStart);
-                //    Destroy(nextRoomStart.roomGameObj);
-                //}
-
-                //MakeWalls(nextRoomStart);
+                nextRoomStart = branchRooms[UnityEngine.Random.Range(0, branchRooms.Count)];
+                replacementPasses++;
             }
-            //CreateRooms(nextRoomStart);
-        }
 
+            if (replacementPasses > 0)
+            {
+                sb.AppendLine("Replacement passes on this round: " + replacementPasses);
+                totalReplacementPasses += replacementPasses;
+            }
+
+            //pick a random side to open
+            ChooseRandomSideToOpen(nextRoomStart);
+
+            //if the room already exists, don't put anything else in this spot
+            CreateRooms(nextRoomStart);
+        }
     }//end create rooms
+
+    private bool IsRoomAlreadyThere(Vector2Int pos)
+    {
+        foreach (Room room in rooms)
+        {
+            if (room.roomPos == pos)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     //picks a random side to open that isn't already open
     private void ChooseRandomSideToOpen(Room roomToOpen)
     {
-        int side = Random.Range(0, 4);
+        int side = UnityEngine.Random.Range(0, 4);
         if (side == 0 && !roomToOpen.isOpenUp)
         {
             print("chose up to open on room: " + roomToOpen.roomPos.ToString());
@@ -255,7 +291,12 @@ public class RoomGenerator : MonoBehaviour
         Room roomRoom = new Room(room.transform.position);
         roomRoom.SetGameObject(room);
 
+        roomRoom.roomPos = new Vector2Int(x, y);
+
         roomCount++;
+
+        //add to log
+        sb.AppendLine("Room Created at: " + roomRoom.roomPos);
 
         return roomRoom;
     }//end create room
@@ -287,6 +328,7 @@ public class RoomGenerator : MonoBehaviour
     }//end make walls
 }
 
+#region classes for room and connections
 public class Room
 {
     public bool isOpenRight;
@@ -298,10 +340,12 @@ public class Room
     public GameObject FrontWall, BackWall, RightWall, LeftWall;
 
     public Vector2Int roomPos;
+    public Transform roomTransform;
     public List<Connection> connections = new List<Connection>();
 
     public Room(Vector3 pos)
     {
+
         isOpenRight = false;
         isOpenLeft = false;
         isOpenUp = false;
@@ -336,7 +380,7 @@ public class Room
         this.RightWall = obj.transform.Find("RightWall").gameObject;
         this.LeftWall = obj.transform.Find("LeftWall").gameObject;
     }
-}
+}//end room class
 
 public class Connection
 {
@@ -368,4 +412,6 @@ public class Connection
             Debug.Log("Direction Connected: Left " + " Room Connected to: " + roomConnectedTo.roomPos.ToString());
         }
     }
-}
+}//end connection class
+
+#endregion
