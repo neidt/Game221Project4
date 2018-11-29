@@ -208,8 +208,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roomPrefab: {fileID: 1807525739632344, guid: d73baa8a92ce3844fb762528e2e678c2, type: 2}
   roomCount: 0
-  levelWidth: 5
-  levelHeight: 5
+  MAXROOMS: 7
   levelTransform: {x: 0, y: 0, z: 0}
   levelRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!4 &550904573
