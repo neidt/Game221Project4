@@ -26,8 +26,9 @@ public class PlayerController : MonoBehaviour
     //player values
     public float maxHealth = 1000f;
     public float currentHealth;
-    public float attack = 10f;
+    public float attack = 20f;
     public float currentAttack;
+    public float playerAttackRate = .2f;
 
     //pickups
     public float healthPickupValue = 10f;
@@ -38,6 +39,8 @@ public class PlayerController : MonoBehaviour
     public Text attackValueTextbox;
     #endregion
 
+    private EnemyHealth enemyHealthScript;
+
     // Use this for initialization
     void Start()
     {
@@ -45,8 +48,6 @@ public class PlayerController : MonoBehaviour
         eyeMount = transform.Find("EyeMount");
 
         speed = 10;
-        BASESPEED = speed;
-        MAXSPEED = speed * runMultiplier;
 
         #region stats
         currentHealth = maxHealth;
@@ -61,7 +62,7 @@ public class PlayerController : MonoBehaviour
         Vector3 moveDirection = Vector3.zero;
         if (Input.GetKey(KeyCode.W))
         {
-           moveDirection += transform.forward;
+            moveDirection += transform.forward;
         }
         if (Input.GetKey(KeyCode.A))
         {
@@ -90,6 +91,19 @@ public class PlayerController : MonoBehaviour
         healthSlider.value = currentHealth;
         attackValueTextbox.text = currentAttack.ToString();
         #endregion
+    }
+
+    private void Attack(GameObject enemy)
+    {
+        enemy.GetComponent<EnemyHealth>().TakeDamage(attack);
+    }
+
+    public void TakeDamage(float damageValue)
+    {
+        currentHealth -= damageValue;
+        Color playerColor = this.gameObject.GetComponent<MeshRenderer>().material.color;
+        Color damageColor = Color.red;
+        playerColor = Color.Lerp(damageColor, playerColor, 3f);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -121,6 +135,33 @@ public class PlayerController : MonoBehaviour
         {
             currentAttack += attackIncreaseValue;
             Destroy(other.gameObject);
+        }
+
+        //if its an enemy, 
+        //disable movment and do combat
+        
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.tag == "Enemy")
+        {
+            Debug.LogWarning("player is hitting enemy");
+            enemyHealthScript = other.gameObject.GetComponent<EnemyHealth>();
+            if (enemyHealthScript.currentHealth > 0)
+            {
+                //this.enabled = false;
+
+                Attack(other.gameObject);
+
+                //if enemy health hits 0
+                //destroy it
+                if (enemyHealthScript.currentHealth <= 0)
+                {
+                    Destroy(other.gameObject);
+                }
+            }
+
         }
     }
 }

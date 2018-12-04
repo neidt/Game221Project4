@@ -7,6 +7,7 @@ TagManager:
   - HealthPickup
   - AttackIncrease
   - HealthIncrease
+  - Enemy
   layers:
   - Default
   - TransparentFX
