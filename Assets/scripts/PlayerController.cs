@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour
 
     private Transform eyeMount;
     private CharacterController characterController;
-    //private Camera mainCam;
     #endregion
 
     #region playerStats
@@ -32,13 +31,22 @@ public class PlayerController : MonoBehaviour
 
     //pickups
     public float healthPickupValue = 10f;
+    public int healthPickupPointValue = 1;
+
     public float healthIncreaseValue = 5f;
+    public int healthIncreasePointValue = 5;
+
     public float attackIncreaseValue = 1f;
+    public int attackIncreasePointValue = 5;
+
+    public int enemyPointValue = 10;
 
     public Slider healthSlider;
     public Text attackValueTextbox;
+    public GameController gcontrol;
     #endregion
 
+    private Color originalPlayerColor;
     private EnemyHealth enemyHealthScript;
 
     // Use this for initialization
@@ -46,6 +54,9 @@ public class PlayerController : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
         eyeMount = transform.Find("EyeMount");
+        gcontrol = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
+
+        originalPlayerColor = this.gameObject.GetComponent<MeshRenderer>().material.color;
 
         speed = 10;
 
@@ -80,7 +91,27 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(Vector3.up, rotateFactor * (Input.GetAxis("Mouse X") * Time.deltaTime));
         if (eyeMount != null)
         {
-            eyeMount.Rotate(Vector3.right, -rotateFactor * (Input.GetAxis("Mouse Y") * Time.deltaTime));
+            float camRotation = Input.GetAxis("Mouse Y") * Time.deltaTime;
+            float yAxis = Input.GetAxis("Mouse Y");
+            float eulerAngleLimit = eyeMount.transform.eulerAngles.x;
+            float maxView = 70f;
+            float minView = -20f;
+
+            if(eulerAngleLimit > 180)
+            {
+                eulerAngleLimit -= 360;
+            }
+            else if(eulerAngleLimit < -180)
+            {
+                eulerAngleLimit += 360;
+            }
+            float targetRotation = eulerAngleLimit + yAxis * -rotateFactor * Time.deltaTime;
+
+            if(targetRotation < maxView && targetRotation > minView)
+            {
+                eyeMount.transform.eulerAngles += new Vector3(yAxis * -rotateFactor * Time.deltaTime, 0, 0);
+            }
+
         }
 
         characterController.SimpleMove(moveDirection.normalized * speed);
@@ -101,9 +132,9 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(float damageValue)
     {
         currentHealth -= damageValue;
-        Color playerColor = this.gameObject.GetComponent<MeshRenderer>().material.color;
         Color damageColor = Color.red;
-        playerColor = Color.Lerp(damageColor, playerColor, 3f);
+        Color playerColor = Color.Lerp(originalPlayerColor, damageColor, Mathf.PingPong(Time.time, 1));
+        this.gameObject.GetComponent<MeshRenderer>().material.color = playerColor;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -117,8 +148,8 @@ public class PlayerController : MonoBehaviour
             {
                 currentHealth = maxHealth;
             }
-
             Destroy(other.gameObject);
+            gcontrol.totalPoints += healthPickupPointValue;
         }
 
         //if its a health increase,
@@ -127,6 +158,7 @@ public class PlayerController : MonoBehaviour
         {
             maxHealth += healthIncreaseValue;
             Destroy(other.gameObject);
+            gcontrol.totalPoints += healthIncreasePointValue;
         }
 
         //if its an attack increase, 
@@ -135,6 +167,7 @@ public class PlayerController : MonoBehaviour
         {
             currentAttack += attackIncreaseValue;
             Destroy(other.gameObject);
+            gcontrol.totalPoints += attackIncreasePointValue;
         }
 
         //if its an enemy, 
@@ -150,18 +183,16 @@ public class PlayerController : MonoBehaviour
             enemyHealthScript = other.gameObject.GetComponent<EnemyHealth>();
             if (enemyHealthScript.currentHealth > 0)
             {
-                //this.enabled = false;
-
                 Attack(other.gameObject);
 
                 //if enemy health hits 0
-                //destroy it
+                //destroy it and add points to player's points
                 if (enemyHealthScript.currentHealth <= 0)
                 {
                     Destroy(other.gameObject);
+                    gcontrol.totalPoints += enemyPointValue;
                 }
             }
-
         }
     }
 }

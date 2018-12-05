@@ -14,6 +14,7 @@ public class RoomGenerator : MonoBehaviour
     public GameObject healthPickupPrefab;
     public GameObject healthIncreasePrefab;
     public GameObject attackIncreasePrefab;
+    public GameObject enemyPrefab;
     Quaternion Quat = new Quaternion(1, 1, 1, 1);
 
     public int roomCount = 0;
@@ -38,6 +39,7 @@ public class RoomGenerator : MonoBehaviour
         CreateHealthPickups();
         CreateHealthIncrease();
         CreateAttackIncrease();
+        CreateEnemy();
         //print("Total replacement passes: " + totalReplacementPasses);
         //System.IO.File.WriteAllText("generation.log", sb.ToString());
     }//end start
@@ -45,10 +47,6 @@ public class RoomGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-        }
     }//end update
 
     private void CreateHealthPickups()
@@ -68,7 +66,7 @@ public class RoomGenerator : MonoBehaviour
     {
         foreach (Room room in rooms)
         {
-            float randInt = UnityEngine.Random.Range(0f, 25);
+            float randInt = UnityEngine.Random.Range(0, 25);
             if (randInt >= 24)
             {
                 GameObject healthIncreaseObj = Instantiate(healthIncreasePrefab, room.roomGameObj.transform.position, Quat);
@@ -81,7 +79,7 @@ public class RoomGenerator : MonoBehaviour
     {
         foreach (Room room in rooms)
         {
-            float randInt = UnityEngine.Random.Range(0f, 25);
+            float randInt = UnityEngine.Random.Range(0, 25);
             if (randInt >= 24)
             {
                 GameObject attackIncreaseObj = Instantiate(attackIncreasePrefab, room.roomGameObj.transform.position, Quaternion.identity);
@@ -89,6 +87,20 @@ public class RoomGenerator : MonoBehaviour
             }
         }
     }//end create attack increase
+
+
+    private void CreateEnemy()
+    {
+        foreach(Room room in rooms)
+        {
+            float randInt = UnityEngine.Random.Range(0, 25);
+            if (randInt >= 24)
+            {
+                GameObject enemyObj = Instantiate(enemyPrefab, room.roomGameObj.transform.position, Quaternion.identity);
+                enemyObj.transform.position += transform.up;
+            }
+        }
+    }
 
     private void GenerateRooms(int xPos, int yPos)
     {

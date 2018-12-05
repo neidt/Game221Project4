@@ -8,29 +8,30 @@ public class EnemyHealth : MonoBehaviour
     public float maxHealth = 100;
     public float currentHealth;
     public float attack = 10f;
-    public float attackRate = 0.05f;
+    public float attackRate = 1f;
     #endregion
 
     private PlayerController pc;
     public bool playerInRange;
-
+    private Color originalEnemyColor;
     // Use this for initialization
     void Start ()
     {
         pc = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
         currentHealth = maxHealth;
-	}
+        originalEnemyColor = this.gameObject.GetComponent<MeshRenderer>().material.color;
+    }
 	
 	// Update is called once per frame
 	void Update ()
     {
         if (playerInRange)
         {
-            InvokeRepeating("AttackPlayer", 1, attackRate);
+            
         }
         else
         {
-            CancelInvoke();
+            this.gameObject.GetComponent<MeshRenderer>().material.color = originalEnemyColor;
         }
 	}
 
@@ -42,9 +43,11 @@ public class EnemyHealth : MonoBehaviour
 
     public void TakeDamage(float damageValue)
     {
-        Color enemyColor = this.gameObject.GetComponent<MeshRenderer>().material.color;
+       
         Color damageColor = Color.red;
-        enemyColor = Color.Lerp(enemyColor, damageColor, Mathf.PingPong(Time.time, 1));
+        Color enemyColor = Color.Lerp(originalEnemyColor, damageColor, Mathf.PingPong(Time.time, 1));
+        this.gameObject.GetComponent<MeshRenderer>().material.color = enemyColor;
+
         currentHealth -= damageValue;
     }
 
@@ -55,6 +58,7 @@ public class EnemyHealth : MonoBehaviour
         if(other.tag == "Player")
         {
             playerInRange = true;
+            InvokeRepeating("AttackPlayer", 1, attackRate);
         }
     }
 
@@ -63,6 +67,7 @@ public class EnemyHealth : MonoBehaviour
         if (other.tag == "Player")
         {
             playerInRange = false;
+            CancelInvoke();
         }
     }
 }

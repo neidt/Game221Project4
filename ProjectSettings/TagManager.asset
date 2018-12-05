@@ -8,6 +8,10 @@ TagManager:
   - AttackIncrease
   - HealthIncrease
   - Enemy
+  - Generator
+  - GameOverText
+  - Timer
+  - PointsCounter
   layers:
   - Default
   - TransparentFX
