@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/meep2.unity
     guid: 5a877f595bcf809468797862b06df7d1
+  - enabled: 1
+    path: Assets/Scenes/HighScores.unity
+    guid: 8c23fa1b640110a45831c950b1c59159
   m_configObjects: {}
